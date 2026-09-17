@@ -102,7 +102,7 @@ Known limitations of the Wii Remote path:
   GCZ, CISO, WBFS, WIA and RVZ are accepted.
 
 > [!NOTE]
-> GPU/CPU minimums are set by driver support and D3D12/Vulkan feature requirements, not by the game's actual demands.
+> GPU/CPU minimums are set by driver support and D3D11/Vulkan feature requirements, not by the game's actual demands.
 
 Only the clean PAL revision will work. Anything else (other
 regions, patched executables) is rejected outright.

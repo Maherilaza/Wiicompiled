@@ -1392,7 +1392,7 @@ int RuntimeMain(int argc, char** argv) {
         }};
 #elif defined(_WIN32)
         static constexpr std::array<GraphicsBackendEntry, 3> kGraphicsBackends{{
-            {"auto", BACKEND_AUTO}, {"d3d12", BACKEND_D3D12}, {"vulkan", BACKEND_VULKAN},
+            {"auto", BACKEND_AUTO}, {"d3d11", BACKEND_D3D11}, {"vulkan", BACKEND_VULKAN},
         }};
 
 #endif

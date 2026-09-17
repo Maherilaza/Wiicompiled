@@ -12,9 +12,8 @@ include_guard(GLOBAL)
 # Infer from the target platform instead.
 function(_aurora_dawn_set_platform_backends)
   if (WIN32)
-    set(DAWN_ENABLE_D3D12 ON CACHE INTERNAL "")
-    # Disable D3D11 because this Aurora fork does not support it.
-    set(DAWN_ENABLE_D3D11 OFF CACHE INTERNAL "")
+    set(DAWN_ENABLE_D3D12 OFF CACHE INTERNAL "")
+    set(DAWN_ENABLE_D3D11 ON CACHE INTERNAL "")
     set(DAWN_ENABLE_VULKAN ON CACHE INTERNAL "")
     set(DAWN_ENABLE_METAL OFF CACHE INTERNAL "")
     set(DAWN_ENABLE_DESKTOP_GL OFF CACHE INTERNAL "")
