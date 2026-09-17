@@ -561,6 +561,8 @@ bool initialize(AuroraBackend auroraBackend) {
     const wgpu::RequestAdapterOptions options{
         .powerPreference = wgpu::PowerPreference::HighPerformance,
         .backendType = backend,
+        .featureLevel = backend == wgpu::BackendType::D3D11 ? wgpu::FeatureLevel::Compatibility
+                                                             : wgpu::FeatureLevel::Core,
         .compatibleSurface = g_surface,
     };
     const auto future = g_instance.RequestAdapter(
@@ -670,7 +672,6 @@ bool initialize(AuroraBackend auroraBackend) {
     std::vector<const char*> enableToggles{
     /* clang-format off */
 #if _WIN32
-      "use_dxc",
 #ifndef NDEBUG
       "emit_hlsl_debug_symbols",
 #endif
@@ -682,6 +683,11 @@ bool initialize(AuroraBackend auroraBackend) {
       "enable_immediate_error_handling",
         /* clang-format on */
     };
+#if _WIN32
+    if (g_backendType == wgpu::BackendType::D3D12) {
+      enableToggles.push_back("use_dxc");
+    }
+#endif
 #ifdef NDEBUG
     enableToggles.push_back("skip_validation");
     enableToggles.push_back("disable_robustness");

@@ -13,7 +13,7 @@ It now powers several completed source ports, including [Dusklight](https://gith
 - Application layer using SDL3
   - Runs on Windows, Linux, macOS, iOS, tvOS, Android
 - GX compatibility layer
-  - Graphics API support: D3D12, Vulkan, Metal
+  - Graphics API support: D3D11, Vulkan, Metal
   - Highly accurate and performant GX implementation
   - Robust pipeline cache system with "transferable" cache support for releases
   - Dolphin-compatible texture pack support

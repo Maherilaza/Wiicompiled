@@ -172,7 +172,7 @@ inline bool IsSupportedGraphicsApi(std::string_view value) {
 #elif defined(__linux__)
     static constexpr std::array<std::string_view, 2> values{"auto", "vulkan"};
 #elif defined(_WIN32)
-    static constexpr std::array<std::string_view, 3> values{"auto", "d3d12", "vulkan"};
+    static constexpr std::array<std::string_view, 3> values{"auto", "d3d11", "vulkan"};
 #endif
     return std::find(values.begin(), values.end(), value) != values.end();
 }
@@ -439,8 +439,16 @@ inline RuntimeUserConfig ParseConfigDocument(const toml::value& document) {
         config.resolutionMultiplier = *value;
     }
     if (auto value = FindConfigValue<std::string>(document, "video", "graphics_api")) {
-        if (IsSupportedGraphicsApi(*value)) {
-            config.graphicsApi = *value;
+        std::string graphicsApi = *value;
+#if defined(_WIN32)
+        if (graphicsApi == "d3d12") {
+            graphicsApi = "d3d11";
+            std::cerr << "[runtime] video.graphics_api=\"d3d12\" is no longer available; using d3d11"
+                      << std::endl;
+        }
+#endif
+        if (IsSupportedGraphicsApi(graphicsApi)) {
+            config.graphicsApi = std::move(graphicsApi);
         } else {
             std::cerr << "[runtime] Unknown video.graphics_api=\"" << *value
                       << "\", using the automatic backend" << std::endl;
