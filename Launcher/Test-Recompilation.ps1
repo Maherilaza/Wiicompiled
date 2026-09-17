@@ -48,7 +48,14 @@ foreach ($relative in $sourceFiles | Sort-Object -Unique) {
 # Native HLE wrappers also call these eight guest symbols directly. Give each
 # its own generated blr function so the real product can link without game code.
 # Keep this list explicit: a new unresolved guest dependency must fail the test.
-[uint32]$entry = 0x80001000L
+$systemBridge = Join-Path $repoRoot 'runtime/include/system_bridge.h'
+$entryMatch = [regex]::Match(
+    [IO.File]::ReadAllText($systemBridge),
+    'kDefaultEntryAddress\s*=\s*(0[xX][0-9a-fA-F]+)'
+)
+if (-not $entryMatch.Success) { throw "Could not read kDefaultEntryAddress from $systemBridge" }
+[uint32]$entry = [Convert]::ToUInt32($entryMatch.Groups[1].Value.Substring(2), 16)
+$entryHex = '0x{0:X8}' -f $entry
 [uint32[]]$guestCallbacks = @(
     0x8012B830L, 0x801A0620L, 0x801A1ED8L, 0x801A961CL,
     0x801AADE0L, 0x801D8D30L, 0x801D9E94L, 0x8055531CL
@@ -114,7 +121,7 @@ $translatorProject = Join-Path $repoRoot 'translator/src/Translator.Cli/Translat
 Invoke-Checked $dotnet @('build', $translatorProject, '-c', 'Release', '--disable-build-servers') 'Building the translator'
 $translator = Join-Path $repoRoot 'translator/src/Translator.Cli/bin/Release/net8.0/Translator.Cli.dll'
 $metadata = Join-Path $stage 'generated/base_translation_output.json'
-Invoke-Checked $dotnet @($translator, 'translate-recursive', '0x80001000', '--project', $manifest,
+Invoke-Checked $dotnet @($translator, 'translate-recursive', $entryHex, '--project', $manifest,
     '--output-metadata', $metadata, '--threads', "$Parallel") `
     'Translating the synthetic DOL'
 # Function-map seeds can be skipped by discovery; do not accept a partial fixture.
@@ -142,6 +149,7 @@ try {
         'Compiling and linking the synthetic product with the full runtime' `
         -WaitForProcessTree $false
     Assert-File (Join-Path $nativeBuild 'WiiCompiled.exe') 'Linked synthetic product'
+    Assert-File (Join-Path $nativeBuild 'D3DCompiler_47.dll') 'D3D11 shader compiler runtime'
 } finally {
     $env:PATH = $oldPath
 }
