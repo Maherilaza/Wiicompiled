@@ -3,8 +3,7 @@ include_guard(GLOBAL)
 # aurora_copy_runtime_dlls(<executable_target> [<additional_targets>...])
 #
 # POST_BUILD command that copies all TARGET_RUNTIME_DLLS from the given targets
-# next to the executable, plus any extra DLLs that Dawn loads dynamically
-# (dxcompiler.dll, dxil.dll).
+# next to the executable, plus any extra DLLs that Dawn loads dynamically.
 function(aurora_copy_runtime_dlls target)
   if (NOT WIN32)
     return()
@@ -34,6 +33,16 @@ function(aurora_copy_runtime_dlls target)
         endif ()
       endforeach ()
     endif ()
+  endif ()
+
+  if (DAWN_ENABLE_D3D11)
+    set(_d3dcompiler_dll "$ENV{SystemRoot}/System32/D3DCompiler_47.dll")
+    if (NOT EXISTS "${_d3dcompiler_dll}")
+      message(FATAL_ERROR "D3D11 requires the Windows D3DCompiler_47.dll runtime")
+    endif ()
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_d3dcompiler_dll}" $<TARGET_FILE_DIR:${target}>
+    )
   endif ()
 endfunction()
 

@@ -39,6 +39,7 @@ struct RuntimeUserConfig {
     std::optional<uint32_t> windowHeight;
     std::optional<float> resolutionMultiplier;
     std::optional<std::string> graphicsApi;
+    bool graphicsApiMigratedFromD3D12 = false;
     std::optional<std::string> displayMode;
     std::optional<uint32_t> frameInterpolationFps;
     std::optional<bool> skipUnreadyPipelines;
@@ -443,8 +444,7 @@ inline RuntimeUserConfig ParseConfigDocument(const toml::value& document) {
 #if defined(_WIN32)
         if (graphicsApi == "d3d12") {
             graphicsApi = "d3d11";
-            std::cerr << "[runtime] video.graphics_api=\"d3d12\" is no longer available; using d3d11"
-                      << std::endl;
+            config.graphicsApiMigratedFromD3D12 = true;
         }
 #endif
         if (IsSupportedGraphicsApi(graphicsApi)) {
@@ -998,6 +998,10 @@ inline void LogLoadedConfig() {
     static const bool logged = [] {
         const auto& config = Get();
         const auto configPath = ResolveConfigPath();
+        if (config.graphicsApiMigratedFromD3D12) {
+            std::cerr << "[runtime] video.graphics_api=\"d3d12\" is no longer available; using d3d11"
+                      << std::endl;
+        }
         std::cout << "[runtime-config] " << PathToUtf8(configPath);
         if (!std::filesystem::exists(configPath)) {
             std::cout << " not found; using built-in defaults";
